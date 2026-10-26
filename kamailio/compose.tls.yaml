@@ -1,0 +1,11 @@
+services:
+  kamailio:
+    environment: {TLS_ENABLED: "1"}
+    volumes:
+      - ./.runtime/tls:/run/lab-tls:ro
+    ports:
+      - "127.0.0.1:15061:5061/tcp"
+      - "127.0.0.1:18443:8443/tcp"
+  sip-tester:
+    volumes:
+      - ./.runtime/tls/ca.crt:/run/lab-tls/ca.crt:ro
