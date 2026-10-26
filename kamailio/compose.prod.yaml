@@ -1,0 +1,23 @@
+# Design scaffold only. Never combine with development compose for deployment.
+# Supply a separately reviewed production config and immutable image digest.
+name: kamailio-sbc-production-design
+services:
+  kamailio:
+    image: ${SBC_IMAGE_DIGEST:?Supply reviewed registry image@sha256 digest}
+    network_mode: host
+    user: ${SBC_UID_GID:?Supply verified uid:gid}
+    entrypoint: [kamailio, -DD, -E, -f, /etc/kamailio/kamailio.cfg]
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    read_only: true
+    tmpfs: [/tmp]
+    volumes:
+      - ${SBC_CONFIG_DIR:?Supply reviewed config directory}:/etc/kamailio:ro
+      - ${SBC_TLS_DIR:?Supply certificate directory}:/run/tls:ro
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 128
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "5"}

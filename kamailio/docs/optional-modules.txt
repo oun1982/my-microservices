@@ -1,0 +1,14 @@
+kamailio-outbound-modules 5.6.3-2 SHA256=922e7a44ab5cf4b68614f89c27747eebaddc031cb782249632f11388b0d90ecb VERIFIED
+Depends: kamailio (= 5.6.3-2), libc6 (>= 2.4), libssl3 (>= 3.0.0)
+-rw-r--r-- root/root     51584 2023-01-31 19:10 ./usr/lib/x86_64-linux-gnu/kamailio/modules/outbound.so
+NOT INSTALLED: deferred feature
+
+kamailio-postgres-modules 5.6.3-2 SHA256=d5817c20233b1616d759a0f546bddaf364b1f95d443b159da0273dfc0b65fb9a VERIFIED
+Depends: kamailio (= 5.6.3-2), postgresql-client, libc6 (>= 2.15), libpq5 (>= 9.0~)
+-rw-r--r-- root/root    286304 2023-01-31 19:10 ./usr/lib/x86_64-linux-gnu/kamailio/modules/db_postgres.so
+NOT INSTALLED: deferred feature
+
+kamailio-mysql-modules 5.6.3-2 SHA256=a2f7ecd19828685663f5c641ba81a4fc5232c06d55fa4d2305ae814f04866f05 VERIFIED
+Depends: default-mysql-client | virtual-mysql-client, kamailio (= 5.6.3-2), libc6 (>= 2.4), libmariadb3 (>= 3.0.0)
+-rw-r--r-- root/root    192368 2023-01-31 19:10 ./usr/lib/x86_64-linux-gnu/kamailio/modules/db_mysql.so
+NOT INSTALLED: deferred feature

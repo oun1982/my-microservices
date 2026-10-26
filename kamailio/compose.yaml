@@ -1,0 +1,45 @@
+name: kamailio-sbc-lab
+x-runtime: &runtime
+  image: kamailio-sbc-lab:dev
+  user: kamailio
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  read_only: true
+  tmpfs: [/tmp]
+  mem_limit: 256m
+  cpus: 1.0
+  pids_limit: 96
+  logging:
+    driver: json-file
+    options: {max-size: "10m", max-file: "3"}
+services:
+  kamailio:
+    <<: *runtime
+    build: .
+    restart: "no"
+    environment: {TLS_ENABLED: "0"}
+    depends_on: [mock-freeswitch, sip-tester]
+    networks:
+      external: {aliases: [sbc-external]}
+      internal: {aliases: [sbc-internal]}
+    ports:
+      - "127.0.0.1:15060:5060/udp"
+      - "127.0.0.1:15060:5060/tcp"
+    volumes:
+      - ./config:/opt/lab/config:ro
+    healthcheck:
+      test: [CMD, python3, /opt/lab/tests/health.py]
+      interval: 10s
+      timeout: 4s
+      retries: 3
+  mock-freeswitch:
+    <<: *runtime
+    entrypoint: [python3, /opt/lab/tests/mock_backend.py]
+    networks: [internal]
+  sip-tester:
+    <<: *runtime
+    entrypoint: [python3, -c, "import time; time.sleep(86400)"]
+    networks: [external]
+networks:
+  external: {}
+  internal: {internal: true}

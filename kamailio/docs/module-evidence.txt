@@ -1,0 +1,34 @@
+PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+NAME="Debian GNU/Linux"
+VERSION_ID="12"
+VERSION="12 (bookworm)"
+VERSION_CODENAME=bookworm
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+uid=100(kamailio) gid=101(kamailio) groups=101(kamailio)
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/sl.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/tm.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/rr.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/maxfwd.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/sanity.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/pv.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/textops.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/siputils.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/xlog.so
+kamailio-tls-modules:amd64: /usr/lib/x86_64-linux-gnu/kamailio/modules/tls.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/xhttp.so
+kamailio-websocket-modules:amd64: /usr/lib/x86_64-linux-gnu/kamailio/modules/websocket.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/nathelper.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/path.so
+NOT INSTALLED: outbound
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/dispatcher.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/permissions.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/pike.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/htable.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/dialog.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/acc.so
+kamailio: /usr/lib/x86_64-linux-gnu/kamailio/modules/rtpengine.so
+NOT INSTALLED: db_postgres
+NOT INSTALLED: db_mysql

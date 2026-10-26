@@ -1,0 +1,35 @@
+.runtime/
+.env
+__pycache__/
+
+# Local configuration and credentials (keep the reviewed placeholder example).
+.env.*
+!.env.example
+credentials*
+secrets*
+.aws/
+
+# Certificate/key material must be supplied outside source control.
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.crt
+*.csr
+*.srl
+
+# Disposable captures, package downloads, caches and temporary outputs.
+*.py[cod]
+.pytest_cache/
+.coverage
+*.log
+*.tmp
+*.swp
+*~
+*.pcap
+*.pcapng
+*.deb
+tmp/
+artifacts/

@@ -1,0 +1,352 @@
+[
+  {
+    "name": "RTPengine NG ping",
+    "command": [
+      "docker",
+      "run",
+      "--rm",
+      "--network",
+      "container:kamailio-media-control-lab-rtpengine-1",
+      "--entrypoint",
+      "python3",
+      "kamailio-sbc-lab:dev",
+      "-c",
+      "import socket; s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);s.settimeout(3);s.sendto(b\"lab d7:command4:pinge\",(\"127.0.0.1\",2223));r=s.recv(4096);print(r);assert b\"pong\" in r"
+    ],
+    "expected": "userspace daemon returns pong",
+    "actual": "b'lab d6:result4:ponge'\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:45:51.404349+00:00"
+  },
+  {
+    "name": "Compose TLS validation",
+    "command": [
+      "docker",
+      "compose",
+      "-f",
+      "kamailio/compose.yaml",
+      "-f",
+      "kamailio/compose.tls.yaml",
+      "config",
+      "--quiet"
+    ],
+    "expected": "valid configuration exit 0",
+    "actual": "",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:45:51.710323+00:00"
+  },
+  {
+    "name": "Debian and installed versions",
+    "command": [
+      "docker",
+      "run",
+      "--rm",
+      "--entrypoint",
+      "sh",
+      "kamailio-sbc-lab:dev",
+      "-c",
+      "cat /etc/os-release; id; kamailio -V; dpkg-query -W kamailio kamailio-tls-modules kamailio-websocket-modules libssl3 netbase"
+    ],
+    "expected": "Debian 12, Kamailio 5.6.3, nonroot",
+    "actual": "PRETTY_NAME=\"Debian GNU/Linux 12 (bookworm)\"\nNAME=\"Debian GNU/Linux\"\nVERSION_ID=\"12\"\nVERSION=\"12 (bookworm)\"\nVERSION_CODENAME=bookworm\nID=debian\nHOME_URL=\"https://www.debian.org/\"\nSUPPORT_URL=\"https://www.debian.org/support\"\nBUG_REPORT_URL=\"https://bugs.debian.org/\"\nuid=100(kamailio) gid=101(kamailio) groups=101(kamailio)\nversion: kamailio 5.6.3 (x86_64/linux) \nflags: USE_TCP, USE_TLS, USE_SCTP, TLS_HOOKS, USE_RAW_SOCKS, DISABLE_NAGLE, USE_MCAST, DNS_IP_HACK, SHM_MMAP, PKG_MALLOC, Q_MALLOC, F_MALLOC, TLSF_MALLOC, DBG_SR_MEMORY, USE_FUTEX, FAST_LOCK-ADAPTIVE_WAIT, USE_DNS_CACHE, USE_DNS_FAILOVER, USE_NAPTR, USE_DST_BLOCKLIST, HAVE_RESOLV_RES, TLS_PTHREAD_MUTEX_SHARED\nADAPTIVE_WAIT_LOOPS 1024, MAX_RECV_BUFFER_SIZE 262144, MAX_URI_SIZE 1024, BUF_SIZE 65535, DEFAULT PKG_SIZE 8MB\npoll method support: poll, epoll_lt, epoll_et, sigio_rt, select.\nid: unknown \ncompiled with gcc 12.2.0\nkamailio\t5.6.3-2\nkamailio-tls-modules:amd64\t5.6.3-2\nkamailio-websocket-modules:amd64\t5.6.3-2\nlibssl3:amd64\t3.0.22-1~deb12u1\nnetbase\t6.4\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:45:56.895918+00:00"
+  },
+  {
+    "name": "Pinned image build",
+    "command": [
+      "sh",
+      "-c",
+      "DOCKER_BUILDKIT=0 docker build -t kamailio-sbc-lab:dev kamailio"
+    ],
+    "expected": "Docker build succeeds",
+    "actual": "DEPRECATED: The legacy builder is deprecated and will be removed in a future release.\n            BuildKit is currently disabled; enable it by removing the DOCKER_BUILDKIT=0\n            environment-variable.\n\nSending build context to Docker daemon   85.5kB\n\nStep 1/10 : FROM debian:12-slim@sha256:7ff6ba31527b9e336162fa061746c366c4b2032f4d2cff2078bea43f78efe3f8\n ---> 8da84df25d28\nStep 2/10 : ARG KAMAILIO_VERSION=5.6.3-2\n ---> Using cache\n ---> b70123bb5c09\nStep 3/10 : RUN apt-get update && apt-get install -y --no-install-recommends     kamailio=${KAMAILIO_VERSION} kamailio-tls-modules=${KAMAILIO_VERSION}     kamailio-websocket-modules=${KAMAILIO_VERSION} ca-certificates openssl netbase     && rm -rf /var/lib/apt/lists/*\n ---> Using cache\n ---> de981d5b8545\nStep 4/10 : WORKDIR /opt/lab\n ---> Using cache\n ---> 0d168f257990\nStep 5/10 : COPY config/ /opt/lab/config/\n ---> Using cache\n ---> 7989e5d2c45f\nStep 6/10 : COPY scripts/ /opt/lab/scripts/\n ---> Using cache\n ---> 1d21359a3af8\nStep 7/10 : COPY tests/ /opt/lab/tests/\n ---> Using cache\n ---> 3c1ec951e5b3\nStep 8/10 : RUN chmod -R a+rX /opt/lab && kamailio -V     && dpkg-query -W > /opt/lab/packages.lock\n ---> Using cache\n ---> 1d8ab8094b4a\nStep 9/10 : USER kamailio\n ---> Using cache\n ---> 49322fe9a1c8\nStep 10/10 : ENTRYPOINT [\"python3\", \"/opt/lab/scripts/start.py\"]\n ---> Using cache\n ---> 292cd36a273b\nSuccessfully built 292cd36a273b\nSuccessfully tagged kamailio-sbc-lab:dev\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:46:54.707695+00:00"
+  },
+  {
+    "name": "RTPengine image build",
+    "command": [
+      "sh",
+      "-c",
+      "DOCKER_BUILDKIT=0 docker build -t rtpengine-sbc-lab:dev kamailio/rtpengine"
+    ],
+    "expected": "Docker build succeeds",
+    "actual": "DEPRECATED: The legacy builder is deprecated and will be removed in a future release.\n            BuildKit is currently disabled; enable it by removing the DOCKER_BUILDKIT=0\n            environment-variable.\n\nSending build context to Docker daemon  5.632kB\n\nStep 1/6 : FROM debian:12-slim@sha256:7ff6ba31527b9e336162fa061746c366c4b2032f4d2cff2078bea43f78efe3f8\n ---> 8da84df25d28\nStep 2/6 : ARG RTPENGINE_VERSION=10.5.3.5-1\n ---> Using cache\n ---> c52768878023\nStep 3/6 : RUN apt-get update && apt-get install -y --no-install-recommends     rtpengine-daemon=${RTPENGINE_VERSION}     && rm -rf /var/lib/apt/lists/*     && dpkg-query -W > /packages.lock\n ---> Using cache\n ---> 3362fb985a4d\nStep 4/6 : WORKDIR /tmp\n ---> Using cache\n ---> c1d25a6654d0\nStep 5/6 : USER nobody\n ---> Using cache\n ---> 1dceefc001af\nStep 6/6 : ENTRYPOINT [\"rtpengine\", \"--foreground\", \"--log-stderr\", \"--table=-1\", \"--interface=127.0.0.1\", \"--listen-ng=127.0.0.1:2223\", \"--port-min=30000\", \"--port-max=30020\"]\n ---> Using cache\n ---> c8ba52d33e3b\nSuccessfully built c8ba52d33e3b\nSuccessfully tagged rtpengine-sbc-lab:dev\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:46:54.814762+00:00"
+  },
+  {
+    "name": "UDP TCP TLS WSS ACL routing suite",
+    "command": [
+      "docker",
+      "compose",
+      "-f",
+      "kamailio/compose.yaml",
+      "-f",
+      "kamailio/compose.tls.yaml",
+      "exec",
+      "-T",
+      "sip-tester",
+      "python3",
+      "/opt/lab/tests/signaling.py",
+      "--tls"
+    ],
+    "expected": "all signaling assertions pass including verified TLS/WSS",
+    "actual": "PASS udp OPTIONS sbc-external hops=10 -> 200\nPASS udp OPTIONS lab.invalid hops=10 -> 200\nPASS udp INVITE lab.invalid hops=10 -> 486\nPASS tcp OPTIONS sbc-external hops=10 -> 200\nPASS tcp OPTIONS lab.invalid hops=10 -> 200\nPASS tcp INVITE lab.invalid hops=10 -> 486\nPASS udp REGISTER sbc-external hops=10 -> 403\nPASS udp INVITE outside.invalid hops=10 -> 403\nPASS udp OPTIONS sbc-external hops=0 -> 483\nPASS malformed SIP missing To silently rejected\nPASS tls OPTIONS sbc-external hops=10 -> 200\nPASS verified WSS handshake + framed SIP OPTIONS 200\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:47:00.756368+00:00"
+  },
+  {
+    "name": "Kamailio syntax check",
+    "command": [
+      "docker",
+      "compose",
+      "-f",
+      "kamailio/compose.yaml",
+      "exec",
+      "-T",
+      "kamailio",
+      "kamailio",
+      "-c",
+      "-f",
+      "/tmp/kamailio.cfg"
+    ],
+    "expected": "config file ok exit 0",
+    "actual": " 0(30) INFO: <core> [core/sctp_core.c:74]: sctp_core_check_support(): SCTP API not enabled - if you want to use it, load sctp module\nListening on \n             udp: 172.19.0.3:5060\n             udp: 172.18.0.3:5080\n             tcp: 172.19.0.3:5060\n             tcp: 172.18.0.3:5080\n             tls: 172.19.0.3:5061\n             tls: 172.19.0.3:8443\nAliases: \n             tls: f793a14996c5:8443\n             tls: f793a14996c5:5061\n             tcp: f793a14996c5:5080\n             tcp: f793a14996c5:5060\n             udp: f793a14996c5:5080\n             udp: f793a14996c5:5060\n             *: sbc-internal:*\n             *: sbc-external:*\n\nconfig file ok, exiting...\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:47:01.257726+00:00"
+  },
+  {
+    "name": "TLS negative and network isolation tests",
+    "command": [
+      "sh",
+      "-c",
+      "docker compose -f kamailio/compose.yaml -f kamailio/compose.tls.yaml exec -T sip-tester python3 - < kamailio/tests/security.py"
+    ],
+    "expected": "TLS1.2/1.3 pass; wrong CA/hostname/Origin rejected; internal DNS hidden",
+    "actual": "PASS negotiated TLSv1.2\nPASS negotiated TLSv1.3\nPASS certificate rejection: wrong hostname\nPASS certificate rejection: untrusted CA\nPASS unauthorized WebSocket Origin rejected\nPASS external-only tester cannot resolve internal backend\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:47:30.370280+00:00"
+  },
+  {
+    "name": "Untrusted source ACL",
+    "command": [
+      "docker",
+      "run",
+      "--rm",
+      "--network",
+      "kamailio-sbc-lab_external",
+      "--entrypoint",
+      "python3",
+      "kamailio-sbc-lab:dev",
+      "/opt/lab/tests/signaling.py",
+      "--untrusted"
+    ],
+    "expected": "INVITE rejected 403 from separate container",
+    "actual": "PASS udp INVITE lab.invalid hops=10 -> 403\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:47:37.163866+00:00"
+  },
+  {
+    "name": "Final Kamailio image build",
+    "command": [
+      "sh",
+      "-c",
+      "DOCKER_BUILDKIT=0 docker build -t kamailio-sbc-lab:dev kamailio"
+    ],
+    "expected": "build exit 0 with final source",
+    "actual": "DEPRECATED: The legacy builder is deprecated and will be removed in a future release.\n            BuildKit is currently disabled; enable it by removing the DOCKER_BUILDKIT=0\n            environment-variable.\n\nSending build context to Docker daemon  94.72kB\n\nStep 1/10 : FROM debian:12-slim@sha256:7ff6ba31527b9e336162fa061746c366c4b2032f4d2cff2078bea43f78efe3f8\n ---> 8da84df25d28\nStep 2/10 : ARG KAMAILIO_VERSION=5.6.3-2\n ---> Using cache\n ---> b70123bb5c09\nStep 3/10 : RUN apt-get update && apt-get install -y --no-install-recommends     kamailio=${KAMAILIO_VERSION} kamailio-tls-modules=${KAMAILIO_VERSION}     kamailio-websocket-modules=${KAMAILIO_VERSION} ca-certificates openssl netbase     && rm -rf /var/lib/apt/lists/*\n ---> Using cache\n ---> de981d5b8545\nStep 4/10 : WORKDIR /opt/lab\n ---> Using cache\n ---> 0d168f257990\nStep 5/10 : COPY config/ /opt/lab/config/\n ---> Using cache\n ---> 7989e5d2c45f\nStep 6/10 : COPY scripts/ /opt/lab/scripts/\n ---> Using cache\n ---> 1d21359a3af8\nStep 7/10 : COPY tests/ /opt/lab/tests/\n ---> 01008d61e364\nStep 8/10 : RUN chmod -R a+rX /opt/lab && kamailio -V     && dpkg-query -W > /opt/lab/packages.lock\n ---> Running in 590a037cc9e3\nversion: kamailio 5.6.3 (x86_64/linux) \nflags: USE_TCP, USE_TLS, USE_SCTP, TLS_HOOKS, USE_RAW_SOCKS, DISABLE_NAGLE, USE_MCAST, DNS_IP_HACK, SHM_MMAP, PKG_MALLOC, Q_MALLOC, F_MALLOC, TLSF_MALLOC, DBG_SR_MEMORY, USE_FUTEX, FAST_LOCK-ADAPTIVE_WAIT, USE_DNS_CACHE, USE_DNS_FAILOVER, USE_NAPTR, USE_DST_BLOCKLIST, HAVE_RESOLV_RES, TLS_PTHREAD_MUTEX_SHARED\nADAPTIVE_WAIT_LOOPS 1024, MAX_RECV_BUFFER_SIZE 262144, MAX_URI_SIZE 1024, BUF_SIZE 65535, DEFAULT PKG_SIZE 8MB\npoll method support: poll, epoll_lt, epoll_et, sigio_rt, select.\nid: unknown \ncompiled with gcc 12.2.0\n ---> Removed intermediate container 590a037cc9e3\n ---> e4b00586438d\nStep 9/10 : USER kamailio\n ---> Running in 19e252526c7e\n ---> Removed intermediate container 19e252526c7e\n ---> 573f3b0c3ed9\nStep 10/10 : ENTRYPOINT [\"python3\", \"/opt/lab/scripts/start.py\"]\n ---> Running in 07388284e852\n ---> Removed intermediate container 07388284e852\n ---> d723014ff06c\nSuccessfully built d723014ff06c\nSuccessfully tagged kamailio-sbc-lab:dev\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:48:18.647830+00:00"
+  },
+  {
+    "name": "Module shared-library verification",
+    "command": [
+      "docker",
+      "run",
+      "--rm",
+      "--entrypoint",
+      "python3",
+      "kamailio-sbc-lab:dev",
+      "-c",
+      "import glob,subprocess; names=\"sl tm rr maxfwd sanity pv textops siputils xlog tls xhttp websocket nathelper path outbound dispatcher permissions pike htable dialog acc rtpengine\".split(); [(print(n, p[0]), subprocess.run([\"ldd\",p[0]],stdout=subprocess.PIPE,text=True,check=True)) for n in [] for p in []]; exec(\"for n in names:\\n p=glob.glob(\\\"/usr/lib/*/kamailio/modules/\\\"+n+\\\".so\\\"); assert len(p)==1,n\\n r=subprocess.run([\\\"ldd\\\",p[0]],capture_output=True,text=True,check=True); assert \\\"not found\\\" not in r.stdout,(n,r.stdout); print(\\\"PASS\\\",n)\")"
+    ],
+    "expected": "all required and evaluated non-DB modules exist and ldd resolves",
+    "actual": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"<string>\", line 2, in <module>\nAssertionError: outbound\nPASS sl\nPASS tm\nPASS rr\nPASS maxfwd\nPASS sanity\nPASS pv\nPASS textops\nPASS siputils\nPASS xlog\nPASS tls\nPASS xhttp\nPASS websocket\nPASS nathelper\nPASS path\n",
+    "exit_code": 1,
+    "status": "FAIL",
+    "timestamp": "2026-10-26T03:48:23.983582+00:00"
+  },
+  {
+    "name": "Container replacement and config persistence",
+    "command": [
+      "sh",
+      "-c",
+      "set -eu; before=$(docker compose -f kamailio/compose.yaml exec -T kamailio sha256sum /opt/lab/config/kamailio.cfg); docker compose -f kamailio/compose.yaml -f kamailio/compose.tls.yaml up -d --no-build --no-deps --force-recreate kamailio; after=$(docker compose -f kamailio/compose.yaml exec -T kamailio sha256sum /opt/lab/config/kamailio.cfg); test \"$before\" = \"$after\"; printf \"%s\\n\" \"$after\"; docker compose -f kamailio/compose.yaml exec -T sip-tester python3 /opt/lab/tests/signaling.py --tls"
+    ],
+    "expected": "same mounted config hash after recreation; signaling suite still passes",
+    "actual": " Container kamailio-sbc-lab-kamailio-1  Recreate\n Container kamailio-sbc-lab-kamailio-1  Recreated\n Container kamailio-sbc-lab-kamailio-1  Starting\n Container kamailio-sbc-lab-kamailio-1  Started\n6a8edb21feef39aa779a0237fc71978c7e7503c4dad5f14f7cee70e79d0e9762  /opt/lab/config/kamailio.cfg\nPASS udp OPTIONS sbc-external hops=10 -> 200\nPASS udp OPTIONS lab.invalid hops=10 -> 200\nPASS udp INVITE lab.invalid hops=10 -> 486\nPASS tcp OPTIONS sbc-external hops=10 -> 200\nPASS tcp OPTIONS lab.invalid hops=10 -> 200\nPASS tcp INVITE lab.invalid hops=10 -> 486\nPASS udp REGISTER sbc-external hops=10 -> 403\nPASS udp INVITE outside.invalid hops=10 -> 403\nPASS udp OPTIONS sbc-external hops=0 -> 483\nPASS malformed SIP missing To silently rejected\nPASS tls OPTIONS sbc-external hops=10 -> 200\nPASS verified WSS handshake + framed SIP OPTIONS 200\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:48:36.164637+00:00"
+  },
+  {
+    "name": "Module inventory corrected required versus optional",
+    "command": [
+      "sh",
+      "-c",
+      "docker compose -f kamailio/compose.yaml exec -T kamailio python3 - < kamailio/tests/modules.py"
+    ],
+    "expected": "all 21 installed modules resolve libraries; 3 deferred modules absent as documented",
+    "actual": "PASS shared libraries: sl\nPASS shared libraries: tm\nPASS shared libraries: rr\nPASS shared libraries: maxfwd\nPASS shared libraries: sanity\nPASS shared libraries: pv\nPASS shared libraries: textops\nPASS shared libraries: siputils\nPASS shared libraries: xlog\nPASS shared libraries: tls\nPASS shared libraries: xhttp\nPASS shared libraries: websocket\nPASS shared libraries: nathelper\nPASS shared libraries: path\nPASS shared libraries: dispatcher\nPASS shared libraries: permissions\nPASS shared libraries: pike\nPASS shared libraries: htable\nPASS shared libraries: dialog\nPASS shared libraries: acc\nPASS shared libraries: rtpengine\nEXPECTED NOT INSTALLED: outbound\nEXPECTED NOT INSTALLED: db_postgres\nEXPECTED NOT INSTALLED: db_mysql\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:49:36.991115+00:00"
+  },
+  {
+    "name": "Network exposure and process health",
+    "command": [
+      "python3",
+      "kamailio/tests/exposure.py"
+    ],
+    "expected": "loopback-only ports, internal network isolation, healthy nonroot SBC",
+    "actual": "PASS loopback-only host ports, no internal 5080 publish, two networks, internal membership, nonroot/capabilities/read-only\nprocess_state= running\nhealth= healthy\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:49:37.205396+00:00"
+  },
+  {
+    "name": "Running listeners and logs",
+    "command": [
+      "sh",
+      "-c",
+      "set -eu; docker compose -f kamailio/compose.yaml exec -T kamailio sh -c \"cat /proc/1/comm; cat /proc/net/udp; cat /proc/net/tcp\"; docker compose -f kamailio/compose.yaml -f kamailio/compose.tls.yaml logs --tail 12; docker compose -f kamailio/rtpengine/compose.yaml logs --tail 5"
+    ],
+    "expected": "listener entries plus recent SBC/mock and RTPengine logs",
+    "actual": "kamailio\n   sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode ref pointer drops            \n  261: 030013AC:13C4 00000000:0000 07 00000000:00000000 00:00000000 00000000   100        0 33227 2 00000000b57fd22f 0         \n  281: 030012AC:13D8 00000000:0000 07 00000000:00000000 00:00000000 00000000   100        0 33228 2 00000000ccfe31df 0         \n22511: 0B00007F:EAAE 00000000:0000 07 00000000:00000000 00:00000000 00000000     0        0 35030 2 00000000a060da9f 0         \n  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode                                                     \n   0: 030013AC:20FB 00000000:0000 0A 00000000:00000000 00:00000000 00000000   100        0 33233 1 000000008188499a 100 0 0 10 0                     \n   1: 030013AC:13C4 00000000:0000 0A 00000000:00000000 00:00000000 00000000   100        0 33230 1 000000002a753174 100 0 0 10 0                     \n   2: 030013AC:13C5 00000000:0000 0A 00000000:00000000 00:00000000 00000000   100        0 33232 1 000000009a64ed88 100 0 0 10 0                     \n   3: 0B00007F:B23B 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 35031 1 00000000ebf3f275 100 0 0 10 0                     \n   4: 030012AC:13D8 00000000:0000 0A 00000000:00000000 00:00000000 00000000   100        0 33231 1 00000000a6e77ee3 100 0 0 10 0                     \n   5: 030013AC:8348 030013AC:13C4 06 00000000:00000000 03:0000016C 00000000     0        0 0 3 000000002a23a990                                      \n   6: 030013AC:86AE 030013AC:13C4 06 00000000:00000000 03:00001174 00000000     0        0 0 3 000000009022d615                                      \n   7: 030013AC:B5F2 030013AC:13C4 06 00000000:00000000 03:0000095F 00000000     0        0 0 3 00000000a262abc3                                      \n   8: 030013AC:C648 030013AC:13C4 06 00000000:00000000 03:00000565 00000000     0        0 0 3 000000001987944b                                      \n   9: 030013AC:CABE 030013AC:13C4 06 00000000:00000000 03:00000D74 00000000     0        0 0 3 00000000d05b31de                                      \n  10: 030013AC:D382 030013AC:13C4 06 00000000:00000000 03:00001570 00000000     0        0 0 3 00000000cca310da                                      \nkamailio-1  |  0(1) INFO: tls [tls_domain.c:364]: ksr_tls_fill_missing(): TLSc<default>: require_certificate=1\nkamailio-1  |  0(1) INFO: tls [tls_domain.c:372]: ksr_tls_fill_missing(): TLSc<default>: cipher_list='(null)'\nkamailio-1  |  0(1) INFO: tls [tls_domain.c:379]: ksr_tls_fill_missing(): TLSc<default>: private_key='(null)'\nkamailio-1  |  0(1) INFO: tls [tls_domain.c:382]: ksr_tls_fill_missing(): TLSc<default>: verify_certificate=1\nkamailio-1  |  0(1) INFO: tls [tls_domain.c:386]: ksr_tls_fill_missing(): TLSc<default>: verify_depth=9\nkamailio-1  |  0(1) INFO: tls [tls_domain.c:389]: ksr_tls_fill_missing(): TLSc<default>: verify_client=0\nkamailio-1  |  0(1) INFO: tls [tls_domain.c:735]: set_verification(): TLSc<default>: Server MUST present valid certificate\nkamailio-1  |  2(13) INFO: lab cid=27908c4ee4fd4168a8808c8366320b2b method=OPTIONS <script>: event=relay dst=sip:172.18.0.2:5080\nkamailio-1  |  1(12) INFO: lab cid=9ea6386b02c94b91ac71c53bd97d0486 method=INVITE <script>: event=relay dst=sip:172.18.0.2:5080\nkamailio-1  | 11(22) INFO: lab cid=f96502b4a78c42a79be43fc6d1d9f2dd method=OPTIONS <script>: event=relay dst=sip:172.18.0.2:5080\nkamailio-1         | 10(21) INFO: lab cid=4b3c9b61680148919ecaf5234f3c8fd1 method=INVITE <script>: event=relay dst=sip:172.18.0.2:5080\nkamailio-1         |  1(12) ERROR: lab cid=3cc3782f3a704aa3ad845a3a81a46b5e method=OPTIONS <core> [core/receive.c:447]: receive_msg(): required headers not found in request\nmock-freeswitch-1  | mock backend ready udp/5080\nmock-freeswitch-1  | mock method=OPTIONS status=200 OK\nmock-freeswitch-1  | mock method=INVITE status=486 Busy Here\nmock-freeswitch-1  | mock method=OPTIONS status=200 OK\nmock-freeswitch-1  | mock method=INVITE status=486 Busy Here\nmock-freeswitch-1  | mock method=OPTIONS status=200 OK\nmock-freeswitch-1  | mock method=INVITE status=486 Busy Here\nmock-freeswitch-1  | mock method=OPTIONS status=200 OK\nmock-freeswitch-1  | mock method=INVITE status=486 Busy Here\nrtpengine-1  | [1792986242.640011] INFO: [core] Startup complete, version 10.5.3.5-1\nrtpengine-1  | [1792986242.975674] INFO: [http] Websocket listener thread running\nrtpengine-1  | [1792986267.188989] INFO: [control] Received command 'ping' from 127.0.0.1:52925\nrtpengine-1  | [1792986267.189023] INFO: [control] Replying to 'ping' from 127.0.0.1:52925 (elapsed time 0.000001 sec)\nrtpengine-1  | [1792986350.915344] INFO: [control] Detected command from 127.0.0.1:42363 as a duplicate\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:50:23.250899+00:00"
+  },
+  {
+    "name": "Final TLS negative regression",
+    "command": [
+      "sh",
+      "-c",
+      "docker compose -f kamailio/compose.yaml -f kamailio/compose.tls.yaml exec -T sip-tester python3 - < kamailio/tests/security.py"
+    ],
+    "expected": "version and negative verification tests still pass after replacement",
+    "actual": "PASS negotiated TLSv1.2\nPASS negotiated TLSv1.3\nPASS certificate rejection: wrong hostname\nPASS certificate rejection: untrusted CA\nPASS unauthorized WebSocket Origin rejected\nPASS external-only tester cannot resolve internal backend\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:50:26.351946+00:00"
+  },
+  {
+    "name": "Final syntax validation",
+    "command": [
+      "sh",
+      "-c",
+      "set -eu; docker compose -f kamailio/compose.yaml exec -T kamailio kamailio -c -f /tmp/kamailio.cfg; docker compose -f kamailio/compose.yaml -f kamailio/compose.tls.yaml config --quiet; docker compose -f kamailio/rtpengine/compose.yaml config --quiet"
+    ],
+    "expected": "rendered cfg and both compose configurations validate",
+    "actual": " 0(248) INFO: <core> [core/sctp_core.c:74]: sctp_core_check_support(): SCTP API not enabled - if you want to use it, load sctp module\nconfig file ok, exiting...\nListening on \n             udp: 172.19.0.3:5060\n             udp: 172.18.0.3:5080\n             tcp: 172.19.0.3:5060\n             tcp: 172.18.0.3:5080\n             tls: 172.19.0.3:5061\n             tls: 172.19.0.3:8443\nAliases: \n             tls: ca12393ba7b5:8443\n             tls: ca12393ba7b5:5061\n             tcp: ca12393ba7b5:5080\n             tcp: ca12393ba7b5:5060\n             udp: ca12393ba7b5:5080\n             udp: ca12393ba7b5:5060\n             *: sbc-internal:*\n             *: sbc-external:*\n\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:50:27.856282+00:00"
+  },
+  {
+    "name": "Stop owned disposable services",
+    "command": [
+      "sh",
+      "-c",
+      "set -eu; docker compose -f kamailio/compose.yaml -f kamailio/compose.tls.yaml stop; docker compose -f kamailio/rtpengine/compose.yaml stop"
+    ],
+    "expected": "controlled stop commands succeed",
+    "actual": " Container kamailio-sbc-lab-kamailio-1  Stopping\n Container kamailio-sbc-lab-kamailio-1  Stopped\n Container kamailio-sbc-lab-mock-freeswitch-1  Stopping\n Container kamailio-sbc-lab-sip-tester-1  Stopping\n Container kamailio-sbc-lab-mock-freeswitch-1  Stopped\n Container kamailio-sbc-lab-sip-tester-1  Stopped\n Container kamailio-media-control-lab-rtpengine-1  Stopping\n Container kamailio-media-control-lab-rtpengine-1  Stopped\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:50:39.741855+00:00"
+  },
+  {
+    "name": "Stopped SBC and RTPengine exits",
+    "command": [
+      "python3",
+      "-c",
+      "import json,subprocess; names=[\"kamailio-sbc-lab-kamailio-1\",\"kamailio-media-control-lab-rtpengine-1\"]; exec(\"for n in names:\\n s=json.loads(subprocess.check_output([\\\"docker\\\",\\\"inspect\\\",n]))[0][\\\"State\\\"];print(n,s[\\\"Status\\\"],s[\\\"ExitCode\\\"]);assert s[\\\"Status\\\"]==\\\"exited\\\" and s[\\\"ExitCode\\\"]==0\")"
+    ],
+    "expected": "SBC and RTPengine exit 0 after SIGTERM",
+    "actual": "kamailio-sbc-lab-kamailio-1 exited 0\nkamailio-media-control-lab-rtpengine-1 exited 0\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:50:39.981801+00:00"
+  },
+  {
+    "name": "Build including final test helpers",
+    "command": [
+      "sh",
+      "-c",
+      "DOCKER_BUILDKIT=0 docker build -t kamailio-sbc-lab:dev kamailio"
+    ],
+    "expected": "complete image build exit 0",
+    "actual": "DEPRECATED: The legacy builder is deprecated and will be removed in a future release.\n            BuildKit is currently disabled; enable it by removing the DOCKER_BUILDKIT=0\n            environment-variable.\n\nSending build context to Docker daemon  121.3kB\n\nStep 1/10 : FROM debian:12-slim@sha256:7ff6ba31527b9e336162fa061746c366c4b2032f4d2cff2078bea43f78efe3f8\n ---> 8da84df25d28\nStep 2/10 : ARG KAMAILIO_VERSION=5.6.3-2\n ---> Using cache\n ---> b70123bb5c09\nStep 3/10 : RUN apt-get update && apt-get install -y --no-install-recommends     kamailio=${KAMAILIO_VERSION} kamailio-tls-modules=${KAMAILIO_VERSION}     kamailio-websocket-modules=${KAMAILIO_VERSION} ca-certificates openssl netbase     && rm -rf /var/lib/apt/lists/*\n ---> Using cache\n ---> de981d5b8545\nStep 4/10 : WORKDIR /opt/lab\n ---> Using cache\n ---> 0d168f257990\nStep 5/10 : COPY config/ /opt/lab/config/\n ---> Using cache\n ---> 7989e5d2c45f\nStep 6/10 : COPY scripts/ /opt/lab/scripts/\n ---> Using cache\n ---> 1d21359a3af8\nStep 7/10 : COPY tests/ /opt/lab/tests/\n ---> dc2ff03befa4\nStep 8/10 : RUN chmod -R a+rX /opt/lab && kamailio -V     && dpkg-query -W > /opt/lab/packages.lock\n ---> Running in b1f4bb1f358c\nversion: kamailio 5.6.3 (x86_64/linux) \nflags: USE_TCP, USE_TLS, USE_SCTP, TLS_HOOKS, USE_RAW_SOCKS, DISABLE_NAGLE, USE_MCAST, DNS_IP_HACK, SHM_MMAP, PKG_MALLOC, Q_MALLOC, F_MALLOC, TLSF_MALLOC, DBG_SR_MEMORY, USE_FUTEX, FAST_LOCK-ADAPTIVE_WAIT, USE_DNS_CACHE, USE_DNS_FAILOVER, USE_NAPTR, USE_DST_BLOCKLIST, HAVE_RESOLV_RES, TLS_PTHREAD_MUTEX_SHARED\nADAPTIVE_WAIT_LOOPS 1024, MAX_RECV_BUFFER_SIZE 262144, MAX_URI_SIZE 1024, BUF_SIZE 65535, DEFAULT PKG_SIZE 8MB\npoll method support: poll, epoll_lt, epoll_et, sigio_rt, select.\nid: unknown \ncompiled with gcc 12.2.0\n ---> Removed intermediate container b1f4bb1f358c\n ---> d98848812034\nStep 9/10 : USER kamailio\n ---> Running in 190ce7db0494\n ---> Removed intermediate container 190ce7db0494\n ---> 6aeeb37e807f\nStep 10/10 : ENTRYPOINT [\"python3\", \"/opt/lab/scripts/start.py\"]\n ---> Running in 54fd9bb1c1b7\n ---> Removed intermediate container 54fd9bb1c1b7\n ---> a0e9bd7cbc0e\nSuccessfully built a0e9bd7cbc0e\nSuccessfully tagged kamailio-sbc-lab:dev\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:51:47.871032+00:00"
+  },
+  {
+    "name": "Start final image",
+    "command": [
+      "docker",
+      "compose",
+      "-f",
+      "kamailio/compose.yaml",
+      "-f",
+      "kamailio/compose.tls.yaml",
+      "up",
+      "-d",
+      "--no-build"
+    ],
+    "expected": "all lab services started",
+    "actual": " Container kamailio-sbc-lab-mock-freeswitch-1  Recreate\n Container kamailio-sbc-lab-sip-tester-1  Recreate\n Container kamailio-sbc-lab-sip-tester-1  Recreated\n Container kamailio-sbc-lab-mock-freeswitch-1  Recreated\n Container kamailio-sbc-lab-kamailio-1  Recreate\n Container kamailio-sbc-lab-kamailio-1  Recreated\n Container kamailio-sbc-lab-sip-tester-1  Starting\n Container kamailio-sbc-lab-mock-freeswitch-1  Starting\n Container kamailio-sbc-lab-mock-freeswitch-1  Started\n Container kamailio-sbc-lab-sip-tester-1  Started\n Container kamailio-sbc-lab-kamailio-1  Starting\n Container kamailio-sbc-lab-kamailio-1  Started\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:52:03.762932+00:00"
+  },
+  {
+    "name": "Final image full signaling regression",
+    "command": [
+      "sh",
+      "-c",
+      "set -eu; docker compose -f kamailio/compose.yaml exec -T sip-tester python3 /opt/lab/tests/signaling.py --tls; docker compose -f kamailio/compose.yaml exec -T sip-tester python3 /opt/lab/tests/security.py; docker compose -f kamailio/compose.yaml exec -T kamailio python3 /opt/lab/tests/modules.py; python3 kamailio/tests/exposure.py"
+    ],
+    "expected": "all SIP, routing, TLS/WSS and certificate policy tests pass",
+    "actual": "PASS udp OPTIONS sbc-external hops=10 -> 200\nPASS udp OPTIONS lab.invalid hops=10 -> 200\nPASS udp INVITE lab.invalid hops=10 -> 486\nPASS tcp OPTIONS sbc-external hops=10 -> 200\nPASS tcp OPTIONS lab.invalid hops=10 -> 200\nPASS tcp INVITE lab.invalid hops=10 -> 486\nPASS udp REGISTER sbc-external hops=10 -> 403\nPASS udp INVITE outside.invalid hops=10 -> 403\nPASS udp OPTIONS sbc-external hops=0 -> 483\nPASS malformed SIP missing To silently rejected\nPASS tls OPTIONS sbc-external hops=10 -> 200\nPASS verified WSS handshake + framed SIP OPTIONS 200\nPASS negotiated TLSv1.2\nPASS negotiated TLSv1.3\nPASS certificate rejection: wrong hostname\nPASS certificate rejection: untrusted CA\nPASS unauthorized WebSocket Origin rejected\nPASS external-only tester cannot resolve internal backend\nPASS shared libraries: sl\nPASS shared libraries: tm\nPASS shared libraries: rr\nPASS shared libraries: maxfwd\nPASS shared libraries: sanity\nPASS shared libraries: pv\nPASS shared libraries: textops\nPASS shared libraries: siputils\nPASS shared libraries: xlog\nPASS shared libraries: tls\nPASS shared libraries: xhttp\nPASS shared libraries: websocket\nPASS shared libraries: nathelper\nPASS shared libraries: path\nPASS shared libraries: dispatcher\nPASS shared libraries: permissions\nPASS shared libraries: pike\nPASS shared libraries: htable\nPASS shared libraries: dialog\nPASS shared libraries: acc\nPASS shared libraries: rtpengine\nEXPECTED NOT INSTALLED: outbound\nEXPECTED NOT INSTALLED: db_postgres\nEXPECTED NOT INSTALLED: db_mysql\nPASS loopback-only host ports, no internal 5080 publish, two networks, internal membership, nonroot/capabilities/read-only\nprocess_state= running\nhealth= healthy\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:52:25.266674+00:00"
+  },
+  {
+    "name": "Final disposable stack teardown",
+    "command": [
+      "sh",
+      "-c",
+      "set -eu; docker compose -f kamailio/compose.yaml -f kamailio/compose.tls.yaml down; docker compose -f kamailio/rtpengine/compose.yaml down"
+    ],
+    "expected": "only owned containers/networks removed; no volumes or images deleted",
+    "actual": " Container kamailio-sbc-lab-kamailio-1  Stopping\n Container kamailio-sbc-lab-kamailio-1  Stopped\n Container kamailio-sbc-lab-kamailio-1  Removing\n Container kamailio-sbc-lab-kamailio-1  Removed\n Container kamailio-sbc-lab-sip-tester-1  Stopping\n Container kamailio-sbc-lab-mock-freeswitch-1  Stopping\n Container kamailio-sbc-lab-mock-freeswitch-1  Stopped\n Container kamailio-sbc-lab-mock-freeswitch-1  Removing\n Container kamailio-sbc-lab-sip-tester-1  Stopped\n Container kamailio-sbc-lab-sip-tester-1  Removing\n Container kamailio-sbc-lab-sip-tester-1  Removed\n Container kamailio-sbc-lab-mock-freeswitch-1  Removed\n Network kamailio-sbc-lab_external  Removing\n Network kamailio-sbc-lab_internal  Removing\n Network kamailio-sbc-lab_external  Removed\n Network kamailio-sbc-lab_internal  Removed\n Container kamailio-media-control-lab-rtpengine-1  Stopping\n Container kamailio-media-control-lab-rtpengine-1  Stopped\n Container kamailio-media-control-lab-rtpengine-1  Removing\n Container kamailio-media-control-lab-rtpengine-1  Removed\n",
+    "exit_code": 0,
+    "status": "PASS",
+    "timestamp": "2026-10-26T03:53:00.183731+00:00"
+  }
+]
