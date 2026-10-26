@@ -69,3 +69,42 @@ jobs:
           docker compose \
             -f kamailio/rtpengine/compose.yaml \
             config --quiet
+
+      - name: Prepare runtime image
+        run: |
+          docker tag kamailio-sbc-lab:ci kamailio-sbc-lab:dev
+
+      - name: Start Kamailio test containers
+        run: |
+          docker compose -f kamailio/compose.yaml \
+            up -d --no-build --pull never
+
+      - name: Check container health
+        run: |
+          docker compose -f kamailio/compose.yaml \
+            ps -a
+
+          docker compose -f kamailio/compose.yaml \
+            exec -T kamailio \
+            python3 /opt/lab/tests/health.py
+
+      - name: Test SIP UDP and TCP
+        run: |
+          docker compose -f kamailio/compose.yaml \
+            exec -T sip-tester \
+            python3 /opt/lab/tests/signaling.py
+
+      - name: Collect logs
+        if: always()
+        run: |
+          docker compose -f kamailio/compose.yaml \
+            ps -a
+
+          docker compose -f kamailio/compose.yaml \
+            logs --no-color --tail=100
+
+      - name: Stop test containers
+        if: always()
+        run: |
+          docker compose -f kamailio/compose.yaml \
+            down --remove-orphans
